@@ -9,13 +9,11 @@
         body {
             background-color: #acc8bc;
             font-family: 'Inter', sans-serif;
-        }
-
-        /* Connecting lines for the bracket */
-        .bracket-line {
-            position: absolute;
-            background-color: #64748b;
-            z-index: 0;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
 
         .player-card {
@@ -26,7 +24,7 @@
 
         .player-card:hover {
             transform: scale(1.05);
-            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+            box-shadow: 0 4px 10px -2px rgb(0 0 0 / 0.15);
         }
 
         .player-card.winner {
@@ -40,24 +38,42 @@
             filter: grayscale(0.5);
         }
 
+        .bracket-scroll-wrapper {
+            width: 100%;
+            overflow-x: auto;
+            display: flex;
+            justify-content: flex-start;
+            padding: 20px;
+        }
+
+        @media (min-width: 1400px) {
+            .bracket-scroll-wrapper {
+                justify-content: center;
+            }
+        }
+
         .bracket-container {
             display: grid;
-            grid-template-columns: 240px 100px 240px 150px 240px 100px 240px;
+            grid-template-columns: 220px 60px 220px 200px 220px 60px 220px;
             align-items: center;
-            min-width: 1300px;
             padding: 40px;
+            gap: 0;
+            width: max-content;
         }
 
         .column {
             display: flex;
             flex-direction: column;
-            justify-content: space-around;
-            height: 100%;
-            gap: 20px;
+            height: 650px;
         }
 
         .center-hub {
             text-align: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
         }
 
         .trophy-icon {
@@ -99,23 +115,14 @@
             transform: none;
             box-shadow: none;
         }
-
-        .bracket-scroll {
-            display: flex;
-            justify-content: center;
-            width: 100%;
-            overflow-x: auto;
-            overflow-y: visible;
-            -webkit-overflow-scrolling: touch;
-        }
     </style>
 </head>
-<body class="p-8 flex flex-col items-center min-h-screen">
+<body class="p-4 md:p-8 min-h-screen w-full box-border">
 
     <div id="username-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4">
         <div class="bg-white rounded-2xl shadow-xl border border-slate-200 max-w-md w-full p-8">
             <h2 class="text-xl font-bold text-slate-800 mb-2">Enter your username</h2>
-            <p class="text-sm text-slate-600 mb-4">Pick a display name <strong>once per browser</strong>. Reloads will bring back the same bracket—you cannot submit a second bracket from this device without clearing site data. Picks are scored against <code class="text-xs bg-slate-100 px-1 rounded">match-results.json</code>.</p>
+            <p class="text-sm text-slate-600 mb-4">Pick a display name. Picks are scored as results come in.</p>
             <p id="username-error" class="text-sm text-red-600 mb-3 hidden" role="alert"></p>
             <label class="block text-sm font-medium text-slate-700 mb-1">Username</label>
             <input type="text" id="username-input" maxlength="40" autocomplete="username" placeholder="e.g. alex" class="w-full border border-slate-300 rounded-lg px-3 py-2 mb-4 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none" />
@@ -125,89 +132,87 @@
 
     <div class="w-full max-w-[1800px] mx-auto flex flex-col lg:flex-row gap-8 items-start justify-center px-2 sm:px-4">
     <div class="flex-1 w-full flex flex-col items-center">
-    <div class="mb-8 text-center w-full max-w-3xl mx-auto px-2">
+    <div class="mb-8 text-center max-w-2xl px-2">
         <div class="flex justify-center mb-4">
-            <!-- Table Tennis Racket SVG -->
             <svg width="60" height="60" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <circle cx="45" cy="40" r="30" fill="#3b82f6" stroke="#1e293b" stroke-width="2"/>
                 <circle cx="55" cy="40" r="30" fill="#ef4444" stroke="#1e293b" stroke-width="2"/>
                 <rect x="45" y="70" width="10" height="25" rx="5" fill="#d97706" stroke="#1e293b" stroke-width="2"/>
             </svg>
         </div>
-        <h1 class="text-4xl font-black text-slate-800 tracking-tighter uppercase italic">Table Tennis Tournament</h1>
-        <p class="text-slate-600 mt-2">Click a player to advance them to the next round</p>
+        <h1 class="text-3xl md:text-4xl font-black text-slate-800 tracking-tighter uppercase italic">Table Tennis Tournament</h1>
+        <p class="text-slate-600 mt-2 font-medium">Predict the results! Click a player to advance them.</p>
         <p id="user-status" class="mt-3 text-sm text-slate-700 font-medium hidden">Playing as <span id="user-status-name" class="text-blue-700"></span></p>
         <p id="bracket-saved-note" class="mt-3 text-sm text-green-800 font-semibold hidden">Your bracket is saved and locked. You cannot change picks.</p>
     </div>
 
-    <div class="bracket-scroll">
+    <div class="bracket-scroll-wrapper">
     <div class="bracket-container bracket-locked" id="bracket">
-        
+
         <!-- ROUND 1 LEFT -->
-        <div class="column">
+        <div class="column justify-between py-10">
             <div id="match-w1" class="flex flex-col gap-4">
                 <div onclick="advance('p1', 'w1')" id="p1" class="player-card bg-white p-3 rounded shadow-sm border-l-4 border-blue-500 flex items-center gap-3">
-                    <div class="w-8 h-8 bg-slate-200 rounded-full flex items-center justify-center">👤</div>
-                    <span class="font-bold">Alex Zhu</span>
+                    <div class="w-8 h-8 bg-slate-200 rounded-full flex items-center justify-center text-xs">👤</div>
+                    <span class="font-bold text-sm">Alex Zhu</span>
                 </div>
                 <div onclick="advance('p2', 'w1')" id="p2" class="player-card bg-white p-3 rounded shadow-sm border-l-4 border-blue-500 flex items-center gap-3">
-                    <div class="w-8 h-8 bg-slate-200 rounded-full flex items-center justify-center">👤</div>
-                    <span class="font-bold">Aman Chandra</span>
+                    <div class="w-8 h-8 bg-slate-200 rounded-full flex items-center justify-center text-xs">👤</div>
+                    <span class="font-bold text-sm">Aman Chandra</span>
                 </div>
             </div>
 
             <div id="match-w2" class="flex flex-col gap-4">
                 <div onclick="advance('p3', 'w2')" id="p3" class="player-card bg-white p-3 rounded shadow-sm border-l-4 border-blue-500 flex items-center gap-3">
-                    <div class="w-8 h-8 bg-slate-200 rounded-full flex items-center justify-center">👤</div>
-                    <span class="font-bold">Yash Greene</span>
+                    <div class="w-8 h-8 bg-slate-200 rounded-full flex items-center justify-center text-xs">👤</div>
+                    <span class="font-bold text-sm">Yash Greene</span>
                 </div>
                 <div onclick="advance('p4', 'w2')" id="p4" class="player-card bg-white p-3 rounded shadow-sm border-l-4 border-blue-500 flex items-center gap-3">
-                    <div class="w-8 h-8 bg-slate-200 rounded-full flex items-center justify-center">👤</div>
-                    <span class="font-bold">Anchit Nayak</span>
+                    <div class="w-8 h-8 bg-slate-200 rounded-full flex items-center justify-center text-xs">👤</div>
+                    <span class="font-bold text-sm">Anchit Nayak</span>
                 </div>
             </div>
 
             <div id="match-w3" class="flex flex-col gap-4">
                 <div onclick="advance('p5', 'w3')" id="p5" class="player-card bg-white p-3 rounded shadow-sm border-l-4 border-blue-500 flex items-center gap-3">
-                    <div class="w-8 h-8 bg-slate-200 rounded-full flex items-center justify-center">👤</div>
-                    <span class="font-bold">Sophie Shen</span>
+                    <div class="w-8 h-8 bg-slate-200 rounded-full flex items-center justify-center text-xs">👤</div>
+                    <span class="font-bold text-sm">Sophie Shen</span>
                 </div>
                 <div onclick="advance('p6', 'w3')" id="p6" class="player-card bg-white p-3 rounded shadow-sm border-l-4 border-blue-500 flex items-center gap-3">
-                    <div class="w-8 h-8 bg-slate-200 rounded-full flex items-center justify-center">👤</div>
-                    <span class="font-bold">Randy Hui</span>
+                    <div class="w-8 h-8 bg-slate-200 rounded-full flex items-center justify-center text-xs">👤</div>
+                    <span class="font-bold text-sm">Randy Hui</span>
                 </div>
             </div>
         </div>
 
-        <!-- SEMI FINALS LEFT -->
         <div class="column"></div>
-        <div class="column">
-            <div id="match-ws1" class="flex flex-col gap-8">
-                <div id="w1" class="player-card empty-slot p-3 rounded flex items-center gap-3 italic">
+
+        <!-- ROUND 2 LEFT -->
+        <div class="column justify-between pt-24 pb-12">
+            <div class="flex flex-col gap-16">
+                <div id="w1" class="player-card empty-slot p-3 rounded flex items-center gap-3 italic text-sm">
                     <div class="w-8 h-8 bg-slate-100 rounded-full flex items-center justify-center opacity-30">👤</div>
                     <span>Winner W1</span>
                 </div>
-                <div id="w2" class="player-card empty-slot p-3 rounded flex items-center gap-3 italic">
+                <div id="w2" class="player-card empty-slot p-3 rounded flex items-center gap-3 italic text-sm">
                     <div class="w-8 h-8 bg-slate-100 rounded-full flex items-center justify-center opacity-30">👤</div>
                     <span>Winner W2</span>
                 </div>
             </div>
-            
-            <div id="ws2-container" class="mt-20">
-                <div id="w3" class="player-card empty-slot p-3 rounded flex items-center gap-3 italic">
-                    <div class="w-8 h-8 bg-slate-100 rounded-full flex items-center justify-center opacity-30">👤</div>
-                    <span>Winner W3</span>
-                </div>
+
+            <div id="w3" class="player-card empty-slot p-3 rounded flex items-center gap-3 italic text-sm">
+                <div class="w-8 h-8 bg-slate-100 rounded-full flex items-center justify-center opacity-30">👤</div>
+                <span>Winner W3</span>
             </div>
         </div>
 
-        <!-- THE CENTER HUB (FINALS) -->
+        <!-- CENTER HUB (FINALS) -->
         <div class="column center-hub">
-            <div id="champion-display" class="mb-10 opacity-0 transition-opacity duration-500">
-                <div class="text-xs font-bold text-yellow-700 uppercase mb-2">Tournament Champion</div>
-                <div id="winner-name" class="text-2xl font-black text-slate-900 mb-4 bg-white p-4 rounded-xl shadow-lg border-2 border-yellow-400">---</div>
+            <div id="champion-display" class="mb-12 opacity-0 transition-opacity duration-500">
+                <div class="text-[10px] font-bold text-yellow-800 uppercase mb-1">Champion</div>
+                <div id="winner-name" class="text-xl font-black text-slate-900 mb-3 bg-white px-4 py-2 rounded-lg shadow-lg border-2 border-yellow-400 whitespace-nowrap">---</div>
                 <div class="trophy-icon">
-                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#facc15" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#facc15" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path>
                         <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path>
                         <path d="M4 22h16"></path>
@@ -219,52 +224,51 @@
             </div>
 
             <div class="flex items-center justify-center gap-4">
-                <div id="f1" onclick="advanceToFinal('f1')" class="player-card empty-slot p-3 rounded w-32 h-20 flex flex-col items-center justify-center text-center text-sm">
-                    <span class="opacity-50">Finalist 1</span>
+                <div id="f1" onclick="advanceToFinal('f1')" class="player-card empty-slot p-2 rounded w-28 h-16 flex flex-col items-center justify-center text-center text-[11px] leading-tight">
+                    <span class="opacity-50 uppercase font-bold mb-1">Finalist 1</span>
                 </div>
-                <div class="w-8 h-0.5 bg-slate-400"></div>
-                <div id="f2" onclick="advanceToFinal('f2')" class="player-card empty-slot p-3 rounded w-32 h-20 flex flex-col items-center justify-center text-center text-sm">
-                    <span class="opacity-50">Finalist 2</span>
+                <div class="w-6 h-0.5 bg-slate-400"></div>
+                <div id="f2" onclick="advanceToFinal('f2')" class="player-card empty-slot p-2 rounded w-28 h-16 flex flex-col items-center justify-center text-center text-[11px] leading-tight">
+                    <span class="opacity-50 uppercase font-bold mb-1">Finalist 2</span>
                 </div>
             </div>
         </div>
 
-        <!-- ROUND 2 RIGHT (SPECIAL STRUCTURE) -->
-        <div class="column">
-            <div id="match-ws3" class="flex flex-col gap-8">
-                <div id="w4" class="player-card empty-slot p-3 rounded flex items-center gap-3 italic">
-                    <div class="w-8 h-8 bg-slate-100 rounded-full flex items-center justify-center opacity-30">👤</div>
-                    <span>Winner W4</span>
-                </div>
-                <div id="w5" class="player-card empty-slot p-3 rounded flex items-center gap-3 italic">
-                    <div class="w-8 h-8 bg-slate-100 rounded-full flex items-center justify-center opacity-30">👤</div>
-                    <span>Winner W5</span>
-                </div>
+        <!-- ROUND 2 RIGHT -->
+        <div class="column justify-start pt-20 gap-24">
+            <div id="w4" class="player-card empty-slot p-3 rounded flex items-center justify-end gap-3 italic text-sm text-right">
+                <span>Winner W4</span>
+                <div class="w-8 h-8 bg-slate-100 rounded-full flex items-center justify-center opacity-30">👤</div>
+            </div>
+            <div id="w5" class="player-card empty-slot p-3 rounded flex items-center justify-end gap-3 italic text-sm text-right">
+                <span>Winner W5</span>
+                <div class="w-8 h-8 bg-slate-100 rounded-full flex items-center justify-center opacity-30">👤</div>
             </div>
         </div>
+
         <div class="column"></div>
 
         <!-- ROUND 1 RIGHT -->
-        <div class="column">
+        <div class="column justify-start pt-12 gap-16">
             <div id="match-w4" class="flex flex-col gap-4">
                 <div onclick="advance('p7', 'w4')" id="p7" class="player-card bg-white p-3 rounded shadow-sm border-r-4 border-blue-500 flex items-center justify-end gap-3 text-right">
-                    <span class="font-bold">Ayvey Ganesh</span>
-                    <div class="w-8 h-8 bg-slate-200 rounded-full flex items-center justify-center">👤</div>
+                    <span class="font-bold text-sm">Ayvey Ganesh</span>
+                    <div class="w-8 h-8 bg-slate-200 rounded-full flex items-center justify-center text-xs">👤</div>
                 </div>
                 <div onclick="advance('p8', 'w4')" id="p8" class="player-card bg-white p-3 rounded shadow-sm border-r-4 border-blue-500 flex items-center justify-end gap-3 text-right">
-                    <span class="font-bold">Derek Ding</span>
-                    <div class="w-8 h-8 bg-slate-200 rounded-full flex items-center justify-center">👤</div>
+                    <span class="font-bold text-sm">Derek Ding</span>
+                    <div class="w-8 h-8 bg-slate-200 rounded-full flex items-center justify-center text-xs">👤</div>
                 </div>
             </div>
 
             <div id="match-w5" class="flex flex-col gap-4">
                 <div onclick="advance('p9', 'w5')" id="p9" class="player-card bg-white p-3 rounded shadow-sm border-r-4 border-blue-500 flex items-center justify-end gap-3 text-right">
-                    <span class="font-bold">Voukich</span>
-                    <div class="w-8 h-8 bg-slate-200 rounded-full flex items-center justify-center">👤</div>
+                    <span class="font-bold text-sm">Voukich</span>
+                    <div class="w-8 h-8 bg-slate-200 rounded-full flex items-center justify-center text-xs">👤</div>
                 </div>
                 <div onclick="advance('p10', 'w5')" id="p10" class="player-card bg-white p-3 rounded shadow-sm border-r-4 border-blue-500 flex items-center justify-end gap-3 text-right">
-                    <span class="font-bold">Paras Painuly</span>
-                    <div class="w-8 h-8 bg-slate-200 rounded-full flex items-center justify-center">👤</div>
+                    <span class="font-bold text-sm">Paras Painuly</span>
+                    <div class="w-8 h-8 bg-slate-200 rounded-full flex items-center justify-center text-xs">👤</div>
                 </div>
             </div>
         </div>
@@ -272,11 +276,11 @@
     </div>
     </div>
 
-    <div id="bracket-actions" class="mt-8 flex flex-wrap gap-3 justify-center items-center w-full px-2">
+    <div id="bracket-actions" class="my-8 flex flex-wrap gap-3 justify-center items-center w-full px-2">
         <button type="button" id="save-bracket-btn" disabled class="bg-emerald-700 text-white px-6 py-2.5 rounded-full font-bold hover:bg-emerald-800 transition-colors disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-emerald-700">
             Save bracket
         </button>
-        <button type="button" id="reset-bracket-btn" class="bg-slate-800 text-white px-6 py-2 rounded-full font-bold hover:bg-slate-700 transition-colors">
+        <button type="button" id="reset-bracket-btn" class="bg-slate-800 text-white px-8 py-3 rounded-full font-bold hover:bg-slate-700 transition-all active:scale-95 shadow-lg">
             Reset bracket
         </button>
     </div>
@@ -284,7 +288,7 @@
 
     <aside class="w-full lg:w-80 shrink-0 bg-white/90 border border-slate-200 rounded-xl shadow-sm p-5 lg:sticky lg:top-8">
         <h2 class="text-lg font-bold text-slate-800 mb-1">Leaderboard</h2>
-        <p class="text-xs text-slate-500 mb-4">Only appears after a full bracket is saved. If you configure the Google Sheet web app in the script, everyone sees the same list; otherwise this device only. Accuracy vs <code class="text-[10px] bg-slate-100 px-0.5 rounded">match-results.json</code> (empty results = 100%).</p>
+        <p class="text-xs text-slate-500 mb-4">Only appears after a full bracket is saved. Picks are scored as results come in. (empty results = 100%).</p>
         <div id="leaderboard-list" class="space-y-2 text-sm"></div>
     </aside>
     </div>
@@ -591,6 +595,7 @@
             unlockBracketUi();
             applyBracketShellState();
             restoreBracketFromWinners();
+            updateSaveButtonState();
             renderLeaderboard();
         }
 
@@ -677,10 +682,10 @@
 
             // Update state and target card
             winners[targetId] = playerName;
-            targetElement.innerHTML = `
-                <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center text-xs">✅</div>
-                <span class="font-bold text-slate-800">${playerName}</span>
-            `;
+            const isRightWinnerSlot = targetId === 'w4' || targetId === 'w5';
+            targetElement.innerHTML = isRightWinnerSlot
+                ? `<span class="font-bold text-slate-800 text-sm">${playerName}</span><div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center text-[10px]">✅</div>`
+                : `<div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center text-[10px]">✅</div><span class="font-bold text-slate-800 text-sm">${playerName}</span>`;
             targetElement.classList.remove('empty-slot', 'italic');
             targetElement.classList.add('bg-white', 'shadow-sm');
             targetElement.style.cursor = "pointer";
@@ -729,11 +734,11 @@
 
             winners[finalId] = name;
             target.innerHTML = `
-                <span class="text-xs uppercase font-bold text-blue-500 mb-1">Finalist</span>
-                <span class="font-black text-slate-800">${name}</span>
+                <span class="text-[9px] uppercase font-bold text-blue-500 mb-0.5">Finalist</span>
+                <span class="font-bold text-slate-800 text-sm leading-tight">${name}</span>
             `;
             target.classList.remove('empty-slot');
-            target.classList.add('bg-white', 'shadow-lg', 'border-2', 'border-blue-500');
+            target.classList.add('bg-white', 'shadow-md', 'border-2', 'border-blue-400');
             
             checkProgression();
             if (!restoring) persistCurrentBracket();
