@@ -557,17 +557,23 @@
 
         function migrateLegacyRightFinalistForOneTimeEdit(entry) {
             if (!canEditSavedBracket) return entry;
-            if (!entry || entry.rightSideMigrated) return entry;
-            const legacyRightFinalist = winners.f2;
-            if (legacyRightFinalist == null || String(legacyRightFinalist).trim() === '') {
+            if (!entry) return entry;
+            const ws3Name = winners.ws3 == null ? '' : String(winners.ws3).trim();
+            const legacyRightFinalist = winners.f2 == null ? '' : String(winners.f2).trim();
+
+            // Always reconcile fetched bracket shape for one-time updaters:
+            // if old F2 exists and WS3 is empty, move old F2 into WS3.
+            if (!ws3Name && !legacyRightFinalist) {
                 entry.rightSideMigrated = true;
                 return entry;
             }
-            winners.ws3 = String(legacyRightFinalist).trim();
-            winners.ws4 = null;
-            winners.f2 = null;
-            if (winners.champion && normName(winners.champion) === normName(legacyRightFinalist)) {
-                winners.champion = null;
+            if (!ws3Name && legacyRightFinalist) {
+                winners.ws3 = legacyRightFinalist;
+                winners.ws4 = null;
+                winners.f2 = null;
+                if (winners.champion && normName(winners.champion) === normName(legacyRightFinalist)) {
+                    winners.champion = null;
+                }
             }
             entry.rightSideMigrated = true;
             return entry;
