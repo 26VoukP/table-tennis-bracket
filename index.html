@@ -555,8 +555,7 @@
             renderLeaderboard();
         }
 
-        function migrateLegacyRightFinalistForOneTimeEdit(entry) {
-            if (!canEditSavedBracket) return entry;
+        function migrateLegacyRightFinalistForFetchedBracket(entry) {
             if (!entry) return entry;
             const ws3Name = winners.ws3 == null ? '' : String(winners.ws3).trim();
             const legacyRightFinalist = winners.f2 == null ? '' : String(winners.f2).trim();
@@ -913,15 +912,8 @@
         }
 
         function applyOfficialResultsToState() {
-            if (!officialResults || typeof officialResults !== 'object') return;
-            for (const [key, value] of Object.entries(officialResults)) {
-                if (value == null || String(value).trim() === '') continue;
-                winners[key] = String(value).trim();
-            }
-            if (officialResultFor('ws1')) {
-                winners.sw12 = officialResultFor('ws1');
-                winners.ws1 = officialResultFor('ws1');
-            }
+            // Keep the user's fetched bracket visible as submitted; official results
+            // are used for locking/scoring, not for rewriting displayed picks.
             backfillSemifinalKeys(winners);
         }
 
@@ -964,13 +956,13 @@
             const remoteRow = getRemoteRowForUsername(name);
             const hasRemoteSavedBracket = !!remoteRow;
 
-            bracketSubmitted = hasRemoteSavedBracket || localEntry.submitted;
-            canEditSavedBracket = bracketSubmitted && !localEntry.updatedOnce;
+            bracketSubmitted = hasRemoteSavedBracket;
+            canEditSavedBracket = hasRemoteSavedBracket && !localEntry.updatedOnce;
             winners = hasRemoteSavedBracket
                 ? { ...initialWinners(), ...coalesceWinners(remoteRow.winners) }
-                : { ...initialWinners(), ...localEntry.winners };
+                : { ...initialWinners() };
             applyOfficialResultsToState();
-            const migratedEntry = migrateLegacyRightFinalistForOneTimeEdit(localEntry);
+            const migratedEntry = migrateLegacyRightFinalistForFetchedBracket(localEntry);
             store.users[name] = {
                 winners: { ...winners },
                 submitted: bracketSubmitted,
