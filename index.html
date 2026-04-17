@@ -88,6 +88,14 @@
             min-height: 22rem;
         }
 
+        .column.r1-right-col {
+            justify-content: space-between;
+            gap: 0.45rem;
+            padding-top: 0.35rem;
+            padding-bottom: 0.35rem;
+            min-height: 22rem;
+        }
+
         .match-with-winner {
             display: flex;
             flex-direction: row;
@@ -116,6 +124,23 @@
         }
 
         .semi-left-col .semi-bridge {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.05rem;
+            padding: 0.1rem 0;
+        }
+
+        .column.semi-right-col {
+            justify-content: center;
+            gap: 0.25rem;
+            padding-top: 0.25rem;
+            padding-bottom: 0.25rem;
+            min-height: 22rem;
+            z-index: 1;
+        }
+
+        .semi-right-col .semi-bridge {
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -212,7 +237,7 @@
         </div>
         <h1 class="text-2xl sm:text-3xl font-black text-slate-800 tracking-tighter uppercase italic">Table Tennis Tournament</h1>
         <p id="user-status" class="mt-2 text-sm text-slate-700 font-medium hidden">Playing as <span id="user-status-name" class="text-blue-700"></span></p>
-        <p id="bracket-saved-note" class="mt-2 text-sm text-green-800 font-semibold hidden">Your bracket is saved and locked. You cannot change picks.</p>
+        <p id="bracket-saved-note" class="mt-2 text-sm text-green-800 font-semibold hidden">Your bracket is saved. You can update picks until April 20, except games with posted results.</p>
         <p id="submission-closed-note" class="mt-2 text-sm text-amber-900 font-semibold bg-amber-100/90 border border-amber-300 rounded-lg px-3 py-2 hidden" role="status"></p>
     </div>
 
@@ -316,40 +341,69 @@
             </div>
         </div>
 
-        <!-- ROUND 2 RIGHT -->
-        <div class="column justify-start pt-6 gap-8 min-h-0">
-            <div id="w4" class="player-card empty-slot p-1.5 rounded flex items-center justify-end gap-1.5 italic text-[11px] text-right">
-                <span class="leading-tight">Winner W4</span>
+        <!-- Right semifinal path to F2: W4-vs-W5 winner, then vs Winner W6 -->
+        <div class="column semi-right-col">
+            <div id="ws3" class="player-card empty-slot p-1.5 rounded flex flex-col items-center justify-center gap-0.5 italic text-center text-[9px] leading-tight w-full max-w-full min-w-0">
                 <div class="w-6 h-6 bg-slate-100 rounded-full flex items-center justify-center opacity-30 shrink-0">👤</div>
+                <span class="font-semibold not-italic text-slate-700">W4 vs W5</span>
+                <span class="text-[8px] text-slate-500 not-italic">winner</span>
             </div>
-            <div id="w5" class="player-card empty-slot p-1.5 rounded flex items-center justify-end gap-1.5 italic text-[11px] text-right">
-                <span class="leading-tight">Winner W5</span>
+            <div class="semi-bridge">
+                <span class="text-slate-400 text-sm leading-none">↓</span>
+                <span class="text-[9px] font-bold uppercase tracking-wide text-slate-600">vs</span>
+            </div>
+            <div id="w6" class="player-card empty-slot p-1.5 rounded flex flex-col items-center justify-center gap-0.5 italic text-center text-[9px] leading-tight w-full max-w-full min-w-0">
                 <div class="w-6 h-6 bg-slate-100 rounded-full flex items-center justify-center opacity-30 shrink-0">👤</div>
+                <span class="font-semibold not-italic text-slate-700">Winner W6</span>
+                <span class="text-[9px] text-slate-500 not-italic">(match 6)</span>
             </div>
         </div>
 
         <div class="column"></div>
 
         <!-- ROUND 1 RIGHT -->
-        <div class="column r1-right-col justify-start pt-6 gap-8 min-h-0">
-            <div id="match-w4" class="flex flex-col gap-1.5">
-                <div onclick="advance('p7', 'w4')" id="p7" class="player-card bg-white p-1.5 rounded shadow-sm border-r-4 border-blue-500 flex items-center justify-end gap-1.5 text-right">
-                    <span class="font-bold text-xs leading-tight">Ayvey Ganesh</span>
-                    <div class="w-6 h-6 bg-slate-200 rounded-full flex items-center justify-center text-[9px] shrink-0">👤</div>
+        <div class="column r1-right-col">
+            <div class="match-with-winner">
+                <div id="w4" class="winner-beside player-card empty-slot p-1.5 rounded flex flex-col items-center justify-center gap-0.5 italic text-center text-[9px] leading-tight min-h-[4.75rem]">
+                    <div class="w-6 h-6 bg-slate-100 rounded-full flex items-center justify-center opacity-40 shrink-0">👤</div>
+                    <span>Winner<br/>W4</span>
                 </div>
-                <div onclick="advance('p8', 'w4')" id="p8" class="player-card bg-white p-1.5 rounded shadow-sm border-r-4 border-blue-500 flex items-center justify-end gap-1.5 text-right">
-                    <span class="font-bold text-xs leading-tight">Derek Ding</span>
-                    <div class="w-6 h-6 bg-slate-200 rounded-full flex items-center justify-center text-[9px] shrink-0">👤</div>
+                <div id="match-w4" class="match-pair flex flex-col gap-1.5">
+                    <div onclick="advance('p7', 'w4')" id="p7" class="player-card bg-white p-1.5 rounded shadow-sm border-r-4 border-blue-500 flex items-center justify-end gap-1.5 text-right">
+                        <span class="font-bold text-xs leading-tight">Ayvey Ganesh</span>
+                        <div class="w-6 h-6 bg-slate-200 rounded-full flex items-center justify-center text-[9px] shrink-0">👤</div>
+                    </div>
+                    <div onclick="advance('p8', 'w4')" id="p8" class="player-card bg-white p-1.5 rounded shadow-sm border-r-4 border-blue-500 flex items-center justify-end gap-1.5 text-right">
+                        <span class="font-bold text-xs leading-tight">Derek Ding</span>
+                        <div class="w-6 h-6 bg-slate-200 rounded-full flex items-center justify-center text-[9px] shrink-0">👤</div>
+                    </div>
                 </div>
             </div>
 
-            <div id="match-w5" class="flex flex-col gap-1.5">
-                <div onclick="advance('p9', 'w5')" id="p9" class="player-card bg-white p-1.5 rounded shadow-sm border-r-4 border-blue-500 flex items-center justify-end gap-1.5 text-right">
-                    <span class="font-bold text-xs leading-tight">Voukich</span>
+            <div class="match-with-winner">
+                <div id="w5" class="winner-beside player-card empty-slot p-1.5 rounded flex flex-col items-center justify-center gap-0.5 italic text-center text-[9px] leading-tight min-h-[4.75rem]">
+                    <div class="w-6 h-6 bg-slate-100 rounded-full flex items-center justify-center opacity-40 shrink-0">👤</div>
+                    <span>Winner<br/>W5</span>
+                </div>
+                <div id="match-w5" class="match-pair flex flex-col gap-1.5">
+                    <div onclick="advance('p9', 'w5')" id="p9" class="player-card bg-white p-1.5 rounded shadow-sm border-r-4 border-blue-500 flex items-center justify-end gap-1.5 text-right">
+                        <span class="font-bold text-xs leading-tight">Voukich</span>
+                        <div class="w-6 h-6 bg-slate-200 rounded-full flex items-center justify-center text-[9px] shrink-0">👤</div>
+                    </div>
+                    <div onclick="advance('p10', 'w5')" id="p10" class="player-card bg-white p-1.5 rounded shadow-sm border-r-4 border-blue-500 flex items-center justify-end gap-1.5 text-right">
+                        <span class="font-bold text-xs leading-tight">Paras Painuly</span>
+                        <div class="w-6 h-6 bg-slate-200 rounded-full flex items-center justify-center text-[9px] shrink-0">👤</div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="match-w6" class="flex flex-col gap-1.5">
+                <div onclick="advance('p11', 'w6')" id="p11" class="player-card bg-white p-1.5 rounded shadow-sm border-r-4 border-blue-500 flex items-center justify-end gap-1.5 text-right">
+                    <span class="font-bold text-xs leading-tight">Ethan Lei</span>
                     <div class="w-6 h-6 bg-slate-200 rounded-full flex items-center justify-center text-[9px] shrink-0">👤</div>
                 </div>
-                <div onclick="advance('p10', 'w5')" id="p10" class="player-card bg-white p-1.5 rounded shadow-sm border-r-4 border-blue-500 flex items-center justify-end gap-1.5 text-right">
-                    <span class="font-bold text-xs leading-tight">Paras Painuly</span>
+                <div onclick="advance('p12', 'w6')" id="p12" class="player-card bg-white p-1.5 rounded shadow-sm border-r-4 border-blue-500 flex items-center justify-end gap-1.5 text-right">
+                    <span class="font-bold text-xs leading-tight">Siddhartha B.</span>
                     <div class="w-6 h-6 bg-slate-200 rounded-full flex items-center justify-center text-[9px] shrink-0">👤</div>
                 </div>
             </div>
@@ -371,11 +425,8 @@
 
     <aside class="w-full lg:w-80 shrink-0 bg-white/90 border border-slate-200 rounded-xl shadow-sm p-5 lg:sticky lg:top-8">
         <h2 class="text-lg font-bold text-slate-800 mb-1">Leaderboard</h2>
-        <p class="text-xs text-slate-500 mb-2">Only appears after a full bracket is saved. Picks are scored as results come in. (empty results = 100%).</p>
-        <p id="results-load-warning" class="hidden text-xs text-amber-900 bg-amber-50 border border-amber-200 rounded-lg px-2 py-2 mb-3" role="status"></p>
-        <button type="button" id="reload-results-btn" class="text-xs font-semibold text-blue-700 hover:text-blue-900 underline mb-3">
-            Reload official results (match-results.json)
-        </button>
+        <p class="text-xs text-slate-500 mb-2">Only appears after a full bracket is saved. Picks are scored as results come in.</p>
+        <p id="results-load-warning" class="hidden text-xs text-amber-900 bg-amber-50 border border-amber-200 rounded-lg px-2 py-2 mb-4" role="status"></p>
         <div id="leaderboard-list" class="space-y-2 text-sm"></div>
     </aside>
     </div>
@@ -385,10 +436,10 @@
         const USERNAME_KEY = 'tt_bracket_last_username';
         /** Locks the first username to this browser so reload cannot start a second identity (localStorage only). */
         const REGISTERED_USER_KEY = 'tt_bracket_registered_user_v1';
-        const SCORE_KEYS = ['w1', 'w2', 'w3', 'w4', 'w5', 'sw12', 'f1', 'f2', 'champion'];
+        const SCORE_KEYS = ['w1', 'w2', 'w3', 'w4', 'w5', 'w6', 'ws1', 'ws2', 'ws3', 'ws4', 'f1', 'f2', 'champion'];
 
-        /** Submissions lock at 8:00 a.m. local time on April 20, 2026. */
-        const SUBMISSION_DEADLINE = new Date(2026, 3, 16, 8, 0, 0, 0);
+        /** Bracket edits lock at 8:00 a.m. local time on April 20, 2026. */
+        const SUBMISSION_DEADLINE = new Date(2026, 3, 20, 8, 0, 0, 0);
 
         function isSubmissionWindowOpen() {
             return Date.now() < SUBMISSION_DEADLINE.getTime();
@@ -412,14 +463,16 @@
             p7: "Ayvey Ganesh",
             p8: "Derek Ding",
             p9: "Voukich",
-            p10: "Paras Painuly"
+            p10: "Paras Painuly",
+            p11: "Ethan Lei",
+            p12: "Siddhartha B."
         };
 
         const initialWinners = () => ({
-            w1: null, w2: null, w3: null, w4: null, w5: null,
+            w1: null, w2: null, w3: null, w4: null, w5: null, w6: null,
             sw12: null,
             /** Denormalized for spreadsheets: W1-vs-W2 winner, then sw12-vs-W3 winner, then W4-vs-W5 winner (mirrors sw12 / path to f1 / path to f2). */
-            ws1: null, ws2: null, ws3: null,
+            ws1: null, ws2: null, ws3: null, ws4: null,
             f1: null, f2: null,
             champion: null
         });
@@ -437,6 +490,9 @@
             const w4 = t(w.w4);
             const w5 = t(w.w5);
             if (f2 && w4 && w5 && (f2 === w4 || f2 === w5) && !t(w.ws3)) w.ws3 = w.f2;
+            const ws3 = t(w.ws3);
+            const w6 = t(w.w6);
+            if (f2 && ws3 && w6 && (f2 === ws3 || f2 === w6) && !t(w.ws4)) w.ws4 = w.f2;
         }
 
         let winners = initialWinners();
@@ -444,19 +500,23 @@
         let officialResults = {};
         /** True when fetch of match-results.json failed (common with file:// — browsers block local fetches). */
         let officialResultsFetchFailed = false;
-        /** True after user saves a complete bracket; picks are frozen. */
+        /** True after user saves a complete bracket. */
         let bracketSubmitted = false;
+        /** True only during the one-time post-update editing window for previously-saved users. */
+        let canEditSavedBracket = false;
+        const EDITABLE_STAGE_KEYS = new Set(['w6', 'f2', 'champion']);
         /** Latest rows from the Sheet (after dedupe by username). */
         let remoteLeaderboardRows = [];
 
         function normalizeUserEntry(raw) {
-            if (!raw || typeof raw !== 'object') return { winners: initialWinners(), submitted: false };
+            if (!raw || typeof raw !== 'object') return { winners: initialWinners(), submitted: false, updatedOnce: false };
             const w = raw.winners && typeof raw.winners === 'object' ? raw.winners : {};
             const merged = { ...initialWinners(), ...w };
             backfillSemifinalKeys(merged);
             return {
                 winners: merged,
-                submitted: raw.submitted === true
+                submitted: raw.submitted === true,
+                updatedOnce: raw.updatedOnce === true
             };
         }
 
@@ -480,35 +540,114 @@
         }
 
         function persistCurrentBracket() {
-            if (!currentUser || bracketSubmitted) return;
+            if (!currentUser) return;
             const store = loadStore();
             if (!store.users) store.users = {};
+            const prior = normalizeUserEntry(store.users[currentUser]);
             store.users[currentUser] = {
                 winners: { ...winners },
-                submitted: false
+                submitted: prior.submitted,
+                updatedOnce: prior.updatedOnce
             };
             saveStore(store);
             updateSaveButtonState();
             renderLeaderboard();
         }
 
+        function canEditStage(stageKey) {
+            if (!currentUser || !canEditSavedBracket) return false;
+            if (!isSubmissionWindowOpen()) return false;
+            if (!EDITABLE_STAGE_KEYS.has(stageKey)) return false;
+            if (isStageLockedByResults(stageKey)) return false;
+            return true;
+        }
+
         function updateSubmissionDeadlineUi() {
             const el = document.getElementById('submission-closed-note');
             if (!el) return;
-            if (!currentUser || bracketSubmitted || isSubmissionWindowOpen()) {
+            if (!currentUser) {
                 el.classList.add('hidden');
                 el.textContent = '';
                 return;
             }
-            el.textContent =
-                'Submissions closed at 8:00 a.m. on April 20, 2026. You can still pick locally; Save bracket is disabled.';
-            el.classList.remove('hidden');
+            if (!isSubmissionWindowOpen()) {
+                el.textContent =
+                    'Bracket edits closed at 8:00 a.m. on April 20, 2026. Picks are now locked.';
+                el.classList.remove('hidden');
+                return;
+            }
+            if (!canEditSavedBracket) {
+                el.textContent =
+                    'Brackets are locked unless you already had a saved bracket eligible for the one-time update.';
+                el.classList.remove('hidden');
+                return;
+            }
+            el.classList.add('hidden');
+            el.textContent = '';
+        }
+
+        function updateSavedBracketMessage() {
+            const savedNote = document.getElementById('bracket-saved-note');
+            if (!savedNote) return;
+            if (!currentUser) {
+                savedNote.classList.add('hidden');
+                return;
+            }
+            if (canEditSavedBracket) {
+                savedNote.textContent = 'One-time update enabled: only W6, F2, and Champion can be changed. Save to lock permanently.';
+                savedNote.classList.remove('hidden');
+                return;
+            }
+            if (bracketSubmitted) {
+                savedNote.textContent = 'Bracket locked. One-time update already used or not eligible.';
+                savedNote.classList.remove('hidden');
+                return;
+            }
+            savedNote.classList.add('hidden');
+        }
+
+        function lockPairUi(pairId) {
+            const pair = document.getElementById(pairId);
+            if (!pair) return;
+            Array.from(pair.querySelectorAll('.player-card')).forEach((card) => {
+                card.classList.add('opacity-80');
+                card.style.pointerEvents = 'none';
+                card.onclick = null;
+                card.removeAttribute('onclick');
+            });
+        }
+
+        function lockNonEditableMatchCards() {
+            // By policy only W6 can be changed during one-time edit.
+            ['match-w1', 'match-w2', 'match-w3', 'match-w4', 'match-w5'].forEach(lockPairUi);
+            if (!canEditStage('w6')) lockPairUi('match-w6');
+        }
+
+        function applyEditabilityLocks() {
+            lockNonEditableMatchCards();
+            ['w1', 'w2', 'w3', 'w4', 'w5', 'sw12', 'ws3'].forEach((id) => {
+                const el = document.getElementById(id);
+                if (!el) return;
+                el.style.pointerEvents = 'none';
+            });
+            if (!canEditStage('f2')) {
+                const el = document.getElementById('f2');
+                if (el) el.style.pointerEvents = 'none';
+            }
+            if (!canEditStage('champion')) {
+                const f1 = document.getElementById('f1');
+                const f2 = document.getElementById('f2');
+                if (f1) f1.style.pointerEvents = 'none';
+                if (f2) f2.style.pointerEvents = 'none';
+            }
+            const w6 = document.getElementById('w6');
+            if (w6 && !canEditStage('w6')) w6.style.pointerEvents = 'none';
         }
 
         function updateSaveButtonState() {
             const btn = document.getElementById('save-bracket-btn');
             if (!btn) return;
-            const canSave = !bracketSubmitted && isBracketComplete() && isSubmissionWindowOpen();
+            const canSave = canEditSavedBracket && isBracketComplete() && isSubmissionWindowOpen();
             btn.disabled = !canSave;
             updateSubmissionDeadlineUi();
         }
@@ -516,35 +655,36 @@
         function applyBracketShellState() {
             const bracketEl = document.getElementById('bracket');
             const actions = document.getElementById('bracket-actions');
-            const savedNote = document.getElementById('bracket-saved-note');
             bracketEl.classList.remove('bracket-locked', 'bracket-frozen');
             if (!currentUser) return;
-            if (bracketSubmitted) {
+            if (!canEditSavedBracket || !isSubmissionWindowOpen()) {
                 bracketEl.classList.add('bracket-frozen');
-                if (actions) actions.classList.add('hidden');
-                if (savedNote) savedNote.classList.remove('hidden');
-            } else {
-                if (actions) actions.classList.remove('hidden');
-                if (savedNote) savedNote.classList.add('hidden');
             }
+            if (actions) {
+                if (canEditSavedBracket && isSubmissionWindowOpen()) actions.classList.remove('hidden');
+                else actions.classList.add('hidden');
+            }
+            updateSavedBracketMessage();
             updateSaveButtonState();
         }
 
         function saveBracket() {
-            if (!currentUser || bracketSubmitted || !isBracketComplete()) return;
+            if (!currentUser || !canEditSavedBracket || !isBracketComplete()) return;
             if (!isSubmissionWindowOpen()) {
-                alert('Bracket submissions are closed. The submission window ended on April 16, 2026.');
+                alert('Bracket edits are closed. The edit window ended on April 20, 2026.');
                 return;
             }
-            if (!confirm('Save your bracket? You will not be able to change picks after this.')) return;
+            if (!confirm('Save this one-time bracket update? You will not be able to edit again.')) return;
             const store = loadStore();
             if (!store.users) store.users = {};
             store.users[currentUser] = {
                 winners: { ...winners },
-                submitted: true
+                submitted: true,
+                updatedOnce: true
             };
             saveStore(store);
             bracketSubmitted = true;
+            canEditSavedBracket = false;
             applyBracketShellState();
             renderLeaderboard();
             postBracketToSheets();
@@ -695,7 +835,7 @@
             el.classList.remove('hidden');
             if (location.protocol === 'file:') {
                 el.textContent =
-                    'Opening this page as a file (file://…) usually blocks loading match-results.json, so everyone stays at 100%. Serve the folder over HTTP (e.g. in this directory run: python -m http.server 8080) then open http://localhost:8080/index.html — or deploy to GitHub Pages. After editing the JSON, use “Reload official results” or refresh the page.';
+                    'Opening this page as a file (file://…) usually blocks loading match-results.json, so everyone stays at 100%. Serve the folder over HTTP (e.g. in this directory run: python -m http.server 8080) then open http://localhost:8080/index.html — or deploy to GitHub Pages. After editing the JSON, refresh the page.';
             } else {
                 el.textContent =
                     'Could not load match-results.json (missing, wrong path, or invalid JSON). Accuracy defaults to 100% until the file loads.';
@@ -718,9 +858,45 @@
             updateResultsLoadWarning();
         }
 
-        async function reloadOfficialResultsAndLeaderboard() {
-            await loadOfficialResults();
-            renderLeaderboard();
+        function officialResultFor(key) {
+            const raw = officialResults && typeof officialResults === 'object' ? officialResults : {};
+            const alias = {
+                ws1: ['ws1', 'sw12'],
+                sw12: ['ws1', 'sw12']
+            };
+            const keys = alias[key] || [key];
+            for (const k of keys) {
+                const v = raw[k];
+                if (v != null && String(v).trim() !== '') return String(v).trim();
+            }
+            return null;
+        }
+
+        function isStageLockedByResults(stageKey) {
+            return !!officialResultFor(stageKey);
+        }
+
+        function isEditsLocked() {
+            return !isSubmissionWindowOpen();
+        }
+
+        function applyOfficialResultsToState() {
+            if (!officialResults || typeof officialResults !== 'object') return;
+            for (const [key, value] of Object.entries(officialResults)) {
+                if (value == null || String(value).trim() === '') continue;
+                winners[key] = String(value).trim();
+            }
+            if (officialResultFor('ws1')) {
+                winners.sw12 = officialResultFor('ws1');
+                winners.ws1 = officialResultFor('ws1');
+            }
+            backfillSemifinalKeys(winners);
+        }
+
+        function lockCompletedMatchesUi() {
+            ['w1', 'w2', 'w3', 'w4', 'w5', 'w6'].forEach((k) => {
+                if (officialResultFor(k)) lockPairUi(`match-${k}`);
+            });
         }
 
         function getRegisteredUsername() {
@@ -749,15 +925,18 @@
             localStorage.setItem(USERNAME_KEY, name);
             const store = loadStore();
             if (!store.users) store.users = {};
-            if (!store.users[name]) store.users[name] = { winners: initialWinners(), submitted: false };
+            if (!store.users[name]) store.users[name] = { winners: initialWinners(), submitted: false, updatedOnce: false };
             const entry = normalizeUserEntry(store.users[name]);
             bracketSubmitted = entry.submitted;
+            canEditSavedBracket = entry.submitted && !entry.updatedOnce;
             winners = { ...initialWinners(), ...entry.winners };
-            store.users[name] = { winners: { ...winners }, submitted: bracketSubmitted };
+            applyOfficialResultsToState();
+            store.users[name] = { winners: { ...winners }, submitted: bracketSubmitted, updatedOnce: entry.updatedOnce };
             saveStore(store);
             unlockBracketUi();
             applyBracketShellState();
             restoreBracketFromWinners();
+            applyEditabilityLocks();
             updateSaveButtonState();
             renderLeaderboard();
         }
@@ -794,7 +973,7 @@
             registerAndLogin(name);
         }
 
-        const r1TargetToPlayers = { w1: ['p1', 'p2'], w2: ['p3', 'p4'], w3: ['p5', 'p6'], w4: ['p7', 'p8'], w5: ['p9', 'p10'] };
+        const r1TargetToPlayers = { w1: ['p1', 'p2'], w2: ['p3', 'p4'], w3: ['p5', 'p6'], w4: ['p7', 'p8'], w5: ['p9', 'p10'], w6: ['p11', 'p12'] };
 
         function playerIdForR1Winner(targetId, winnerName) {
             const ids = r1TargetToPlayers[targetId];
@@ -803,21 +982,22 @@
         }
 
         function restoreBracketFromWinners() {
-            ['w1', 'w2', 'w3', 'w4', 'w5'].forEach((tid) => {
+            ['w1', 'w2', 'w3', 'w4', 'w5', 'w6'].forEach((tid) => {
                 const n = winners[tid];
                 if (!n) return;
                 const pid = playerIdForR1Winner(tid, n);
                 if (pid) advance(pid, tid, true);
             });
-            if (winners.sw12) {
-                const wid = winners.sw12 === winners.w1 ? 'w1' : winners.sw12 === winners.w2 ? 'w2' : null;
+            if (winners.ws1 || winners.sw12) {
+                const leftSemiWinner = winners.ws1 || winners.sw12;
+                const wid = leftSemiWinner === winners.w1 ? 'w1' : leftSemiWinner === winners.w2 ? 'w2' : null;
                 if (wid) handleW1vW2(wid, true);
             }
             if (winners.f1) {
-                const hasSw12 = winners.sw12 != null && String(winners.sw12).trim() !== '';
+                const hasSw12 = (winners.ws1 || winners.sw12) != null && String(winners.ws1 || winners.sw12).trim() !== '';
                 if (hasSw12) {
                     const wid =
-                        winners.f1 === winners.sw12 ? 'sw12' : winners.f1 === winners.w3 ? 'w3' : null;
+                        winners.f1 === (winners.ws1 || winners.sw12) ? 'sw12' : winners.f1 === winners.w3 ? 'w3' : null;
                     if (wid) handleSw12vW3(wid, true);
                 } else {
                     if (winners.f1 === winners.w3) handleSemiAdvance('w3', 'ws2', true);
@@ -825,14 +1005,19 @@
                     else if (winners.f1 === winners.w2) handleSemiAdvance('w2', 'ws1', true);
                 }
             }
+            if (winners.ws3) {
+                if (winners.ws3 === winners.w4) handleSemiAdvance('w4', 'ws3', true);
+                else if (winners.ws3 === winners.w5) handleSemiAdvance('w5', 'ws3', true);
+            }
             if (winners.f2) {
-                if (winners.f2 === winners.w4) handleSemiAdvance('w4', 'ws3', true);
-                else if (winners.f2 === winners.w5) handleSemiAdvance('w5', 'ws3', true);
+                if (winners.f2 === winners.w6) handleWs3vW6('w6', true);
+                else if (winners.f2 === winners.ws3) handleWs3vW6('ws3', true);
             }
             if (winners.champion) {
                 if (winners.champion === winners.f1) advanceToFinal('f1', true);
                 else if (winners.champion === winners.f2) advanceToFinal('f2', true);
             }
+            lockCompletedMatchesUi();
         }
 
         function requireUser() {
@@ -884,6 +1069,20 @@
             f2.onclick = () => advanceToFinal('f2');
         }
 
+        function resetWs3SlotEmpty() {
+            const ws3 = document.getElementById('ws3');
+            if (!ws3) return;
+            ws3.innerHTML =
+                '<div class="w-6 h-6 bg-slate-100 rounded-full flex items-center justify-center opacity-30 shrink-0">👤</div>' +
+                '<span class="font-semibold not-italic text-slate-700">W4 vs W5</span>' +
+                '<span class="text-[8px] text-slate-500 not-italic">winner</span>';
+            ws3.classList.add('empty-slot', 'italic');
+            ws3.classList.remove('bg-white', 'shadow-sm');
+            ws3.style.cursor = '';
+            ws3.removeAttribute('onclick');
+            ws3.onclick = null;
+        }
+
         function resetSw12SlotEmpty() {
             const el = document.getElementById('sw12');
             if (!el) return;
@@ -931,9 +1130,35 @@
         /** After W4 or W5 R1 pick changes: clear F2 and champion. */
         function cascadeInvalidateAfterW4OrW5Change(restoring) {
             if (restoring) return;
-            winners.f2 = null;
             winners.ws3 = null;
-            ['w4', 'w5'].forEach((id) => {
+            winners.ws4 = null;
+            winners.f2 = null;
+            ['w4', 'w5', 'w6', 'ws3'].forEach((id) => {
+                const el = document.getElementById(id);
+                if (el) el.classList.remove('winner', 'eliminated');
+            });
+            resetWs3SlotEmpty();
+            resetF2SlotEmpty();
+            clearChampionUi();
+        }
+
+        function cascadeInvalidateAfterW6Change(restoring) {
+            if (restoring) return;
+            winners.ws4 = null;
+            winners.f2 = null;
+            ['ws3', 'w6'].forEach((id) => {
+                const el = document.getElementById(id);
+                if (el) el.classList.remove('winner', 'eliminated');
+            });
+            resetF2SlotEmpty();
+            clearChampionUi();
+        }
+
+        function cascadeInvalidateAfterWs3OutcomeChange(restoring) {
+            if (restoring) return;
+            winners.ws4 = null;
+            winners.f2 = null;
+            ['ws3', 'w6'].forEach((id) => {
                 const el = document.getElementById(id);
                 if (el) el.classList.remove('winner', 'eliminated');
             });
@@ -955,8 +1180,9 @@
         }
 
         function advance(playerId, targetId, restoring) {
-            if (!restoring && bracketSubmitted) return;
+            if (!restoring && isEditsLocked()) return;
             if (!restoring && !requireUser()) return;
+            if (!restoring && !canEditStage(targetId)) return;
             const playerName = players[playerId];
             const prevR1 = winners[targetId];
             if (
@@ -968,6 +1194,7 @@
                 if (targetId === 'w1' || targetId === 'w2') cascadeInvalidateAfterW1OrW2Change(restoring);
                 else if (targetId === 'w3') cascadeInvalidateAfterW3Change(restoring);
                 else if (targetId === 'w4' || targetId === 'w5') cascadeInvalidateAfterW4OrW5Change(restoring);
+                else if (targetId === 'w6') cascadeInvalidateAfterW6Change(restoring);
             }
             const targetElement = document.getElementById(targetId);
             
@@ -982,14 +1209,13 @@
 
             // Update state and target card
             winners[targetId] = playerName;
-            const isRightWinnerSlot = targetId === 'w4' || targetId === 'w5';
-            const isBesideSlot = targetId === 'w1' || targetId === 'w2';
+            const isBesideSlot = targetId === 'w1' || targetId === 'w2' || targetId === 'w4' || targetId === 'w5';
             if (isBesideSlot) {
                 targetElement.innerHTML = `<div class="w-7 h-7 bg-green-100 rounded-full flex items-center justify-center text-[9px] shrink-0">✅</div><span class="font-bold text-slate-800 text-xs leading-tight text-center not-italic">${playerName}</span>`;
             } else if (targetId === 'w3') {
                 targetElement.innerHTML = `<div class="w-7 h-7 bg-green-100 rounded-full flex items-center justify-center text-[9px] shrink-0">✅</div><span class="font-bold text-slate-800 text-xs leading-tight text-center not-italic">${playerName}</span><span class="text-[9px] text-slate-600 not-italic">(match 3)</span>`;
-            } else if (isRightWinnerSlot) {
-                targetElement.innerHTML = `<span class="font-bold text-slate-800 text-xs leading-tight">${playerName}</span><div class="w-7 h-7 bg-green-100 rounded-full flex items-center justify-center text-[9px] shrink-0">✅</div>`;
+            } else if (targetId === 'w6') {
+                targetElement.innerHTML = `<div class="w-7 h-7 bg-green-100 rounded-full flex items-center justify-center text-[9px] shrink-0">✅</div><span class="font-bold text-slate-800 text-xs leading-tight text-center not-italic">${playerName}</span><span class="text-[9px] text-slate-600 not-italic">(match 6)</span>`;
             } else {
                 targetElement.innerHTML = `<div class="w-7 h-7 bg-green-100 rounded-full flex items-center justify-center text-[9px] shrink-0">✅</div><span class="font-bold text-slate-800 text-xs leading-tight">${playerName}</span>`;
             }
@@ -1004,6 +1230,8 @@
                     if (winners.sw12) handleSw12vW3('w3');
                 } else if (targetId === 'w4' || targetId === 'w5') {
                     handleSemiAdvance(targetId, 'ws3');
+                } else if (targetId === 'w6') {
+                    if (winners.ws3) handleWs3vW6('w6');
                 }
             };
 
@@ -1020,8 +1248,9 @@
         }
 
         function handleW1vW2(winnerId, restoring) {
-            if (!restoring && bracketSubmitted) return;
+            if (!restoring && isEditsLocked()) return;
             if (!restoring && !requireUser()) return;
+            if (!restoring && !canEditStage('ws1')) return;
             if (!winners.w1 || !winners.w2) return;
             if (winnerId !== 'w1' && winnerId !== 'w2') return;
             const name = winners[winnerId];
@@ -1063,8 +1292,9 @@
         }
 
         function handleSw12vW3(winnerId, restoring) {
-            if (!restoring && bracketSubmitted) return;
+            if (!restoring && isEditsLocked()) return;
             if (!restoring && !requireUser()) return;
+            if (!restoring && !canEditStage('ws2')) return;
             if (!winners.sw12 || !winners.w3) return;
             if (winnerId !== 'sw12' && winnerId !== 'w3') return;
             const name = winners[winnerId];
@@ -1073,10 +1303,11 @@
             advanceFinalist(name, 'f1', winnerId, ['sw12', 'w3'], restoring);
         }
 
-        /** Right bracket W4 vs W5 → F2; legacy left restore only for ws1/ws2. */
+        /** Right bracket: W4 vs W5 -> WS3, then WS3 vs W6 -> F2. */
         function handleSemiAdvance(winnerId, semiId, restoring) {
-            if (!restoring && bracketSubmitted) return;
+            if (!restoring && isEditsLocked()) return;
             if (!restoring && !requireUser()) return;
+            if (!restoring && !canEditStage(semiId)) return;
             const name = winners[winnerId];
             if (!name) return;
 
@@ -1085,13 +1316,57 @@
             } else if (semiId === 'ws2') {
                 advanceFinalist(name, 'f1', winnerId, ['w1', 'w2', 'w3'], restoring);
             } else if (semiId === 'ws3') {
-                advanceFinalist(name, 'f2', winnerId, ['w4', 'w5'], restoring);
+                const prevWs3 = winners.ws3;
+                if (
+                    !restoring &&
+                    prevWs3 != null &&
+                    String(prevWs3).trim() !== '' &&
+                    normName(prevWs3) !== normName(name)
+                ) {
+                    cascadeInvalidateAfterWs3OutcomeChange(restoring);
+                }
+
+                ['w4', 'w5'].forEach((compId) => {
+                    const el = document.getElementById(compId);
+                    if (el) {
+                        el.classList.remove('winner');
+                        el.classList.add('eliminated');
+                    }
+                });
+                document.getElementById(winnerId).classList.remove('eliminated');
+                document.getElementById(winnerId).classList.add('winner');
+
+                winners.ws3 = name;
+                const ws3El = document.getElementById('ws3');
+                if (ws3El) {
+                    ws3El.innerHTML = `<span class="font-bold text-slate-800 text-xs leading-tight">${name}</span><div class="w-7 h-7 bg-green-100 rounded-full flex items-center justify-center text-[9px] shrink-0">✅</div>`;
+                    ws3El.classList.remove('empty-slot', 'italic');
+                    ws3El.classList.add('bg-white', 'shadow-sm');
+                    ws3El.style.cursor = 'pointer';
+                    ws3El.onclick = () => {
+                        if (winners.w6) handleWs3vW6('ws3');
+                    };
+                }
+                if (!restoring) persistCurrentBracket();
             }
         }
 
-        function advanceFinalist(name, finalId, winnerId, competitors, restoring) {
-            if (!restoring && bracketSubmitted) return;
+        function handleWs3vW6(winnerId, restoring) {
+            if (!restoring && isEditsLocked()) return;
             if (!restoring && !requireUser()) return;
+            if (!restoring && !canEditStage('f2')) return;
+            if (!winners.ws3 || !winners.w6) return;
+            if (winnerId !== 'ws3' && winnerId !== 'w6') return;
+            const name = winners[winnerId];
+            if (!name) return;
+            winners.ws4 = name;
+            advanceFinalist(name, 'f2', winnerId, ['ws3', 'w6'], restoring);
+        }
+
+        function advanceFinalist(name, finalId, winnerId, competitors, restoring) {
+            if (!restoring && isEditsLocked()) return;
+            if (!restoring && !requireUser()) return;
+            if (!restoring && !canEditStage(finalId)) return;
             const target = document.getElementById(finalId);
 
             const prevFinal = winners[finalId];
@@ -1124,8 +1399,8 @@
                 else if (ids.length === 3 && ids.includes('w1') && ids.includes('w2') && ids.includes('w3')) {
                     winners.ws2 = name;
                 }
-            } else if (finalId === 'f2' && competitors.includes('w4') && competitors.includes('w5')) {
-                winners.ws3 = name;
+            } else if (finalId === 'f2' && competitors.includes('ws3') && competitors.includes('w6')) {
+                winners.ws4 = name;
             }
             target.innerHTML = `
                 <span class="text-[8px] uppercase font-bold text-blue-500 leading-none">Finalist</span>
@@ -1139,8 +1414,9 @@
         }
 
         function advanceToFinal(finalId, restoring) {
-            if (!restoring && bracketSubmitted) return;
+            if (!restoring && isEditsLocked()) return;
             if (!restoring && !requireUser()) return;
+            if (!restoring && !canEditStage('champion')) return;
             const name = winners[finalId];
             if (!name) return;
 
@@ -1173,15 +1449,13 @@
             if (e.key === 'Enter') submitUsername();
         });
         document.getElementById('save-bracket-btn').addEventListener('click', saveBracket);
-        const reloadResultsBtn = document.getElementById('reload-results-btn');
-        if (reloadResultsBtn) reloadResultsBtn.addEventListener('click', () => reloadOfficialResultsAndLeaderboard());
-
         document.getElementById('reset-bracket-btn').addEventListener('click', () => {
-            if (!currentUser || bracketSubmitted) return;
+            if (!currentUser || !canEditSavedBracket || isEditsLocked()) return;
             if (!confirm('Clear all picks and start over?')) return;
             const store = loadStore();
             if (!store.users) store.users = {};
-            store.users[currentUser] = { winners: initialWinners(), submitted: false };
+            const prior = normalizeUserEntry(store.users[currentUser]);
+            store.users[currentUser] = { winners: initialWinners(), submitted: prior.submitted, updatedOnce: prior.updatedOnce };
             saveStore(store);
             location.reload();
         });
