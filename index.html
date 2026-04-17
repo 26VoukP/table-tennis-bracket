@@ -729,6 +729,12 @@
             return Array.from(best.values()).map((x) => x.row);
         }
 
+        function getRemoteRowForUsername(username) {
+            if (!username || !remoteLeaderboardRows.length) return null;
+            const key = normName(username);
+            return remoteLeaderboardRows.find((r) => normName(r && r.username) === key) || null;
+        }
+
         async function refreshRemoteLeaderboard() {
             if (!GOOGLE_SHEETS_WEBAPP_URL) {
                 remoteLeaderboardRows = [];
@@ -948,12 +954,17 @@
             if (!store.users[name]) {
                 store.users[name] = { winners: initialWinners(), submitted: false, updatedOnce: false, rightSideMigrated: false };
             }
-            const entry = normalizeUserEntry(store.users[name]);
-            bracketSubmitted = entry.submitted;
-            canEditSavedBracket = entry.submitted && !entry.updatedOnce;
-            winners = { ...initialWinners(), ...entry.winners };
+            const localEntry = normalizeUserEntry(store.users[name]);
+            const remoteRow = getRemoteRowForUsername(name);
+            const hasRemoteSavedBracket = !!remoteRow;
+
+            bracketSubmitted = hasRemoteSavedBracket || localEntry.submitted;
+            canEditSavedBracket = bracketSubmitted && !localEntry.updatedOnce;
+            winners = hasRemoteSavedBracket
+                ? { ...initialWinners(), ...coalesceWinners(remoteRow.winners) }
+                : { ...initialWinners(), ...localEntry.winners };
             applyOfficialResultsToState();
-            const migratedEntry = migrateLegacyRightFinalistForOneTimeEdit(entry);
+            const migratedEntry = migrateLegacyRightFinalistForOneTimeEdit(localEntry);
             store.users[name] = {
                 winners: { ...winners },
                 submitted: bracketSubmitted,
@@ -1476,6 +1487,8 @@
         document.getElementById('username-input').addEventListener('keydown', (e) => {
             if (e.key === 'Enter') submitUsername();
         });
+        const legacyResetBtn = document.getElementById('reset-bracket-btn');
+        if (legacyResetBtn) legacyResetBtn.remove();
         document.getElementById('save-bracket-btn').addEventListener('click', saveBracket);
 
         (async function init() {
