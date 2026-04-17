@@ -417,9 +417,6 @@
         <button type="button" id="save-bracket-btn" disabled class="bg-emerald-700 text-white px-6 py-2.5 rounded-full font-bold hover:bg-emerald-800 transition-colors disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-emerald-700">
             Save bracket
         </button>
-        <button type="button" id="reset-bracket-btn" class="bg-slate-800 text-white px-8 py-3 rounded-full font-bold hover:bg-slate-700 transition-all active:scale-95 shadow-lg">
-            Reset bracket
-        </button>
     </div>
     </div>
 
@@ -509,14 +506,17 @@
         let remoteLeaderboardRows = [];
 
         function normalizeUserEntry(raw) {
-            if (!raw || typeof raw !== 'object') return { winners: initialWinners(), submitted: false, updatedOnce: false };
+            if (!raw || typeof raw !== 'object') {
+                return { winners: initialWinners(), submitted: false, updatedOnce: false, rightSideMigrated: false };
+            }
             const w = raw.winners && typeof raw.winners === 'object' ? raw.winners : {};
             const merged = { ...initialWinners(), ...w };
             backfillSemifinalKeys(merged);
             return {
                 winners: merged,
                 submitted: raw.submitted === true,
-                updatedOnce: raw.updatedOnce === true
+                updatedOnce: raw.updatedOnce === true,
+                rightSideMigrated: raw.rightSideMigrated === true
             };
         }
 
@@ -547,11 +547,30 @@
             store.users[currentUser] = {
                 winners: { ...winners },
                 submitted: prior.submitted,
-                updatedOnce: prior.updatedOnce
+                updatedOnce: prior.updatedOnce,
+                rightSideMigrated: prior.rightSideMigrated
             };
             saveStore(store);
             updateSaveButtonState();
             renderLeaderboard();
+        }
+
+        function migrateLegacyRightFinalistForOneTimeEdit(entry) {
+            if (!canEditSavedBracket) return entry;
+            if (!entry || entry.rightSideMigrated) return entry;
+            const legacyRightFinalist = winners.f2;
+            if (legacyRightFinalist == null || String(legacyRightFinalist).trim() === '') {
+                entry.rightSideMigrated = true;
+                return entry;
+            }
+            winners.ws3 = String(legacyRightFinalist).trim();
+            winners.ws4 = null;
+            winners.f2 = null;
+            if (winners.champion && normName(winners.champion) === normName(legacyRightFinalist)) {
+                winners.champion = null;
+            }
+            entry.rightSideMigrated = true;
+            return entry;
         }
 
         function canEditStage(stageKey) {
@@ -625,7 +644,7 @@
 
         function applyEditabilityLocks() {
             lockNonEditableMatchCards();
-            ['w1', 'w2', 'w3', 'w4', 'w5', 'sw12', 'ws3'].forEach((id) => {
+            ['w1', 'w2', 'w3', 'w4', 'w5', 'sw12'].forEach((id) => {
                 const el = document.getElementById(id);
                 if (!el) return;
                 el.style.pointerEvents = 'none';
@@ -680,7 +699,8 @@
             store.users[currentUser] = {
                 winners: { ...winners },
                 submitted: true,
-                updatedOnce: true
+                updatedOnce: true,
+                rightSideMigrated: true
             };
             saveStore(store);
             bracketSubmitted = true;
@@ -925,13 +945,21 @@
             localStorage.setItem(USERNAME_KEY, name);
             const store = loadStore();
             if (!store.users) store.users = {};
-            if (!store.users[name]) store.users[name] = { winners: initialWinners(), submitted: false, updatedOnce: false };
+            if (!store.users[name]) {
+                store.users[name] = { winners: initialWinners(), submitted: false, updatedOnce: false, rightSideMigrated: false };
+            }
             const entry = normalizeUserEntry(store.users[name]);
             bracketSubmitted = entry.submitted;
             canEditSavedBracket = entry.submitted && !entry.updatedOnce;
             winners = { ...initialWinners(), ...entry.winners };
             applyOfficialResultsToState();
-            store.users[name] = { winners: { ...winners }, submitted: bracketSubmitted, updatedOnce: entry.updatedOnce };
+            const migratedEntry = migrateLegacyRightFinalistForOneTimeEdit(entry);
+            store.users[name] = {
+                winners: { ...winners },
+                submitted: bracketSubmitted,
+                updatedOnce: migratedEntry.updatedOnce,
+                rightSideMigrated: migratedEntry.rightSideMigrated
+            };
             saveStore(store);
             unlockBracketUi();
             applyBracketShellState();
@@ -1449,16 +1477,6 @@
             if (e.key === 'Enter') submitUsername();
         });
         document.getElementById('save-bracket-btn').addEventListener('click', saveBracket);
-        document.getElementById('reset-bracket-btn').addEventListener('click', () => {
-            if (!currentUser || !canEditSavedBracket || isEditsLocked()) return;
-            if (!confirm('Clear all picks and start over?')) return;
-            const store = loadStore();
-            if (!store.users) store.users = {};
-            const prior = normalizeUserEntry(store.users[currentUser]);
-            store.users[currentUser] = { winners: initialWinners(), submitted: prior.submitted, updatedOnce: prior.updatedOnce };
-            saveStore(store);
-            location.reload();
-        });
 
         (async function init() {
             migrateLegacyRegisteredUser();
