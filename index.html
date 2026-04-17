@@ -371,7 +371,11 @@
 
     <aside class="w-full lg:w-80 shrink-0 bg-white/90 border border-slate-200 rounded-xl shadow-sm p-5 lg:sticky lg:top-8">
         <h2 class="text-lg font-bold text-slate-800 mb-1">Leaderboard</h2>
-        <p class="text-xs text-slate-500 mb-4">Only appears after a full bracket is saved. Picks are scored as results come in. (empty results = 100%).</p>
+        <p class="text-xs text-slate-500 mb-2">Only appears after a full bracket is saved. Picks are scored as results come in. (empty results = 100%).</p>
+        <p id="results-load-warning" class="hidden text-xs text-amber-900 bg-amber-50 border border-amber-200 rounded-lg px-2 py-2 mb-3" role="status"></p>
+        <button type="button" id="reload-results-btn" class="text-xs font-semibold text-blue-700 hover:text-blue-900 underline mb-3">
+            Reload official results (match-results.json)
+        </button>
         <div id="leaderboard-list" class="space-y-2 text-sm"></div>
     </aside>
     </div>
@@ -384,7 +388,7 @@
         const SCORE_KEYS = ['w1', 'w2', 'w3', 'w4', 'w5', 'sw12', 'f1', 'f2', 'champion'];
 
         /** Submissions lock at 8:00 a.m. local time on April 20, 2026. */
-        const SUBMISSION_DEADLINE = new Date(2026, 3, 20, 8, 0, 0, 0);
+        const SUBMISSION_DEADLINE = new Date(2026, 3, 16, 8, 0, 0, 0);
 
         function isSubmissionWindowOpen() {
             return Date.now() < SUBMISSION_DEADLINE.getTime();
@@ -438,6 +442,8 @@
         let winners = initialWinners();
         let currentUser = null;
         let officialResults = {};
+        /** True when fetch of match-results.json failed (common with file:// — browsers block local fetches). */
+        let officialResultsFetchFailed = false;
         /** True after user saves a complete bracket; picks are frozen. */
         let bracketSubmitted = false;
         /** Latest rows from the Sheet (after dedupe by username). */
@@ -527,7 +533,7 @@
         function saveBracket() {
             if (!currentUser || bracketSubmitted || !isBracketComplete()) return;
             if (!isSubmissionWindowOpen()) {
-                alert('Bracket submissions are closed. The submission window ended at 8:00 a.m. on April 20, 2026.');
+                alert('Bracket submissions are closed. The submission window ended on April 16, 2026.');
                 return;
             }
             if (!confirm('Save your bracket? You will not be able to change picks after this.')) return;
@@ -678,15 +684,43 @@
                 .replace(/"/g, '&quot;');
         }
 
+        function updateResultsLoadWarning() {
+            const el = document.getElementById('results-load-warning');
+            if (!el) return;
+            if (!officialResultsFetchFailed) {
+                el.classList.add('hidden');
+                el.textContent = '';
+                return;
+            }
+            el.classList.remove('hidden');
+            if (location.protocol === 'file:') {
+                el.textContent =
+                    'Opening this page as a file (file://…) usually blocks loading match-results.json, so everyone stays at 100%. Serve the folder over HTTP (e.g. in this directory run: python -m http.server 8080) then open http://localhost:8080/index.html — or deploy to GitHub Pages. After editing the JSON, use “Reload official results” or refresh the page.';
+            } else {
+                el.textContent =
+                    'Could not load match-results.json (missing, wrong path, or invalid JSON). Accuracy defaults to 100% until the file loads.';
+            }
+        }
+
         async function loadOfficialResults() {
+            officialResultsFetchFailed = false;
             try {
-                const res = await fetch('match-results.json', { cache: 'no-store' });
+                const url = new URL('match-results.json', window.location.href).href;
+                const res = await fetch(url, { cache: 'no-store' });
                 if (!res.ok) throw new Error('bad status');
                 const data = await res.json();
                 officialResults = data && typeof data === 'object' ? data : {};
-            } catch {
+            } catch (e) {
                 officialResults = {};
+                officialResultsFetchFailed = true;
+                console.warn('Could not load match-results.json:', e);
             }
+            updateResultsLoadWarning();
+        }
+
+        async function reloadOfficialResultsAndLeaderboard() {
+            await loadOfficialResults();
+            renderLeaderboard();
         }
 
         function getRegisteredUsername() {
@@ -805,10 +839,136 @@
             return !!currentUser;
         }
 
+        const EMPTY_SW12_INNER =
+            '<div class="w-6 h-6 bg-slate-100 rounded-full flex items-center justify-center opacity-30 shrink-0">👤</div>' +
+            '<span class="font-semibold not-italic text-slate-700">W1 vs W2</span>' +
+            '<span class="text-[8px] text-slate-500 not-italic">winner</span>';
+        const EMPTY_W3_SEMI_INNER =
+            '<div class="w-6 h-6 bg-slate-100 rounded-full flex items-center justify-center opacity-30 shrink-0">👤</div>' +
+            '<span class="font-semibold not-italic text-slate-700">Winner W3</span>' +
+            '<span class="text-[9px] text-slate-500 not-italic">(match 3)</span>';
+        const EMPTY_F1_INNER = '<span class="opacity-50 uppercase font-bold">F1</span>';
+        const EMPTY_F2_INNER = '<span class="opacity-50 uppercase font-bold">F2</span>';
+
+        function clearChampionUi() {
+            winners.champion = null;
+            const cd = document.getElementById('champion-display');
+            const wn = document.getElementById('winner-name');
+            if (wn) wn.textContent = '---';
+            if (cd) {
+                cd.classList.add('opacity-0');
+                cd.classList.remove('opacity-100');
+            }
+            ['f1', 'f2'].forEach((id) => {
+                const el = document.getElementById(id);
+                if (!el) return;
+                el.classList.remove('ring-4', 'ring-yellow-400', 'ring-offset-2', 'opacity-50');
+            });
+        }
+
+        function resetF1SlotEmpty() {
+            const f1 = document.getElementById('f1');
+            if (!f1) return;
+            f1.innerHTML = EMPTY_F1_INNER;
+            f1.classList.add('empty-slot');
+            f1.classList.remove('bg-white', 'shadow-md', 'border-2', 'border-blue-400');
+            f1.onclick = () => advanceToFinal('f1');
+        }
+
+        function resetF2SlotEmpty() {
+            const f2 = document.getElementById('f2');
+            if (!f2) return;
+            f2.innerHTML = EMPTY_F2_INNER;
+            f2.classList.add('empty-slot');
+            f2.classList.remove('bg-white', 'shadow-md', 'border-2', 'border-blue-400');
+            f2.onclick = () => advanceToFinal('f2');
+        }
+
+        function resetSw12SlotEmpty() {
+            const el = document.getElementById('sw12');
+            if (!el) return;
+            el.innerHTML = EMPTY_SW12_INNER;
+            el.classList.add('empty-slot', 'italic');
+            el.classList.remove('bg-white', 'shadow-sm');
+            el.style.cursor = '';
+            el.removeAttribute('onclick');
+            el.onclick = null;
+        }
+
+        /** After W1 or W2 R1 pick changes: clear left semis through champion (not W3 match). */
+        function cascadeInvalidateAfterW1OrW2Change(restoring) {
+            if (restoring) return;
+            winners.sw12 = null;
+            winners.ws1 = null;
+            winners.f1 = null;
+            winners.ws2 = null;
+            resetSw12SlotEmpty();
+            ['w1', 'w2'].forEach((id) => {
+                const el = document.getElementById(id);
+                if (el) el.classList.remove('winner', 'eliminated');
+            });
+            ['sw12', 'w3'].forEach((id) => {
+                const el = document.getElementById(id);
+                if (el) el.classList.remove('winner', 'eliminated');
+            });
+            resetF1SlotEmpty();
+            clearChampionUi();
+        }
+
+        /** After W3 (match 3) R1 pick changes: clear F1 and champion; sw12 stays. */
+        function cascadeInvalidateAfterW3Change(restoring) {
+            if (restoring) return;
+            winners.f1 = null;
+            winners.ws2 = null;
+            ['sw12', 'w3'].forEach((id) => {
+                const el = document.getElementById(id);
+                if (el) el.classList.remove('winner', 'eliminated');
+            });
+            resetF1SlotEmpty();
+            clearChampionUi();
+        }
+
+        /** After W4 or W5 R1 pick changes: clear F2 and champion. */
+        function cascadeInvalidateAfterW4OrW5Change(restoring) {
+            if (restoring) return;
+            winners.f2 = null;
+            winners.ws3 = null;
+            ['w4', 'w5'].forEach((id) => {
+                const el = document.getElementById(id);
+                if (el) el.classList.remove('winner', 'eliminated');
+            });
+            resetF2SlotEmpty();
+            clearChampionUi();
+        }
+
+        /** After W1-vs-W2 (sw12) outcome changes: clear F1 and champion. */
+        function cascadeInvalidateAfterSw12OutcomeChange(restoring) {
+            if (restoring) return;
+            winners.f1 = null;
+            winners.ws2 = null;
+            ['sw12', 'w3'].forEach((id) => {
+                const el = document.getElementById(id);
+                if (el) el.classList.remove('winner', 'eliminated');
+            });
+            resetF1SlotEmpty();
+            clearChampionUi();
+        }
+
         function advance(playerId, targetId, restoring) {
             if (!restoring && bracketSubmitted) return;
             if (!restoring && !requireUser()) return;
             const playerName = players[playerId];
+            const prevR1 = winners[targetId];
+            if (
+                !restoring &&
+                prevR1 != null &&
+                String(prevR1).trim() !== '' &&
+                normName(prevR1) !== normName(playerName)
+            ) {
+                if (targetId === 'w1' || targetId === 'w2') cascadeInvalidateAfterW1OrW2Change(restoring);
+                else if (targetId === 'w3') cascadeInvalidateAfterW3Change(restoring);
+                else if (targetId === 'w4' || targetId === 'w5') cascadeInvalidateAfterW4OrW5Change(restoring);
+            }
             const targetElement = document.getElementById(targetId);
             
             // UI visual feedback for selection
@@ -867,6 +1027,16 @@
             const name = winners[winnerId];
             if (!name) return;
 
+            const prevSw12 = winners.sw12;
+            if (
+                !restoring &&
+                prevSw12 != null &&
+                String(prevSw12).trim() !== '' &&
+                normName(prevSw12) !== normName(name)
+            ) {
+                cascadeInvalidateAfterSw12OutcomeChange(restoring);
+            }
+
             ['w1', 'w2'].forEach((compId) => {
                 const el = document.getElementById(compId);
                 if (el) {
@@ -899,6 +1069,7 @@
             if (winnerId !== 'sw12' && winnerId !== 'w3') return;
             const name = winners[winnerId];
             if (!name) return;
+
             advanceFinalist(name, 'f1', winnerId, ['sw12', 'w3'], restoring);
         }
 
@@ -922,7 +1093,17 @@
             if (!restoring && bracketSubmitted) return;
             if (!restoring && !requireUser()) return;
             const target = document.getElementById(finalId);
-            
+
+            const prevFinal = winners[finalId];
+            if (
+                !restoring &&
+                prevFinal != null &&
+                String(prevFinal).trim() !== '' &&
+                normName(prevFinal) !== normName(name)
+            ) {
+                clearChampionUi();
+            }
+
             // Visual feedback for the round
             competitors.forEach(compId => {
                 const el = document.getElementById(compId);
@@ -992,6 +1173,9 @@
             if (e.key === 'Enter') submitUsername();
         });
         document.getElementById('save-bracket-btn').addEventListener('click', saveBracket);
+        const reloadResultsBtn = document.getElementById('reload-results-btn');
+        if (reloadResultsBtn) reloadResultsBtn.addEventListener('click', () => reloadOfficialResultsAndLeaderboard());
+
         document.getElementById('reset-bracket-btn').addEventListener('click', () => {
             if (!currentUser || bracketSubmitted) return;
             if (!confirm('Clear all picks and start over?')) return;
