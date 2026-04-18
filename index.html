@@ -802,6 +802,13 @@
             return Math.round((correct / total) * 1000) / 10;
         }
 
+        /** Bracket considered "updated" for leaderboard styling once W6 has a saved pick. */
+        function hasW6WinnerInSavedData(winners) {
+            const w = coalesceWinners(winners);
+            const v = w.w6;
+            return v != null && String(v).trim() !== '';
+        }
+
         function renderLeaderboard() {
             const store = loadStore();
             const users = store.users || {};
@@ -829,7 +836,8 @@
 
             const rows = Array.from(merged.values()).map((entry) => ({
                 name: entry.name,
-                pct: accuracyForPredictions(entry.winners)
+                pct: accuracyForPredictions(entry.winners),
+                winners: entry.winners
             }));
             rows.sort((a, b) => b.pct - a.pct || a.name.localeCompare(b.name));
             const el = document.getElementById('leaderboard-list');
@@ -840,8 +848,10 @@
             }
             el.innerHTML = rows.map((r, i) => {
                 const you = currentUser && normName(r.name) === normName(currentUser);
+                const needsUpdate = !hasW6WinnerInSavedData(r.winners);
+                const nameColor = needsUpdate ? 'text-yellow-600' : 'text-slate-700';
                 return `<div class="flex justify-between items-center gap-2 py-2 px-3 rounded-lg ${you ? 'bg-blue-50 border border-blue-200' : 'bg-slate-50'}">
-                    <span class="font-medium text-slate-700"><span class="text-slate-400 mr-2">${i + 1}.</span>${escapeHtml(r.name)}${you ? ' <span class="text-xs text-blue-600">(you)</span>' : ''}</span>
+                    <span class="font-medium ${nameColor}"><span class="text-slate-400 mr-2">${i + 1}.</span>${escapeHtml(r.name)}${you ? ' <span class="text-xs text-blue-600">(you)</span>' : ''}</span>
                     <span class="font-bold tabular-nums text-slate-800">${r.pct}%</span>
                 </div>`;
             }).join('');
