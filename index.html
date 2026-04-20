@@ -579,11 +579,7 @@
         }
 
         function canEditStage(stageKey) {
-            if (!currentUser || !canEditSavedBracket) return false;
-            if (!isSubmissionWindowOpen()) return false;
-            if (!EDITABLE_STAGE_KEYS.has(stageKey)) return false;
-            if (isStageLockedByResults(stageKey)) return false;
-            return true;
+            return false;
         }
 
         function updateSubmissionDeadlineUi() {
@@ -594,20 +590,8 @@
                 el.textContent = '';
                 return;
             }
-            if (!isSubmissionWindowOpen()) {
-                el.textContent =
-                    'Bracket edits closed at 8:00 a.m. on April 20, 2026. Picks are now locked.';
-                el.classList.remove('hidden');
-                return;
-            }
-            if (!canEditSavedBracket) {
-                el.textContent =
-                    'Brackets are locked unless you already had a saved bracket eligible for the one-time update.';
-                el.classList.remove('hidden');
-                return;
-            }
-            el.classList.add('hidden');
-            el.textContent = '';
+            el.textContent = 'Brackets are locked for all players.';
+            el.classList.remove('hidden');
         }
 
         function updateSavedBracketMessage() {
@@ -617,13 +601,8 @@
                 savedNote.classList.add('hidden');
                 return;
             }
-            if (canEditSavedBracket) {
-                savedNote.textContent = 'One-time update enabled: only W6, F2, and Champion can be changed. Save to lock permanently.';
-                savedNote.classList.remove('hidden');
-                return;
-            }
             if (bracketSubmitted) {
-                savedNote.textContent = 'Bracket locked. One-time update already used or not eligible.';
+                savedNote.textContent = 'Bracket locked.';
                 savedNote.classList.remove('hidden');
                 return;
             }
@@ -671,8 +650,7 @@
         function updateSaveButtonState() {
             const btn = document.getElementById('save-bracket-btn');
             if (!btn) return;
-            const canSave = canEditSavedBracket && isBracketComplete() && isSubmissionWindowOpen();
-            btn.disabled = !canSave;
+            btn.disabled = true;
             updateSubmissionDeadlineUi();
         }
 
@@ -681,38 +659,17 @@
             const actions = document.getElementById('bracket-actions');
             bracketEl.classList.remove('bracket-locked', 'bracket-frozen');
             if (!currentUser) return;
-            if (!canEditSavedBracket || !isSubmissionWindowOpen()) {
-                bracketEl.classList.add('bracket-frozen');
-            }
+            bracketEl.classList.add('bracket-frozen');
             if (actions) {
-                if (canEditSavedBracket && isSubmissionWindowOpen()) actions.classList.remove('hidden');
-                else actions.classList.add('hidden');
+                actions.classList.add('hidden');
             }
             updateSavedBracketMessage();
             updateSaveButtonState();
         }
 
         function saveBracket() {
-            if (!currentUser || !canEditSavedBracket || !isBracketComplete()) return;
-            if (!isSubmissionWindowOpen()) {
-                alert('Bracket edits are closed. The edit window ended on April 20, 2026.');
-                return;
-            }
-            if (!confirm('Save this one-time bracket update? You will not be able to edit again.')) return;
-            const store = loadStore();
-            if (!store.users) store.users = {};
-            store.users[currentUser] = {
-                winners: { ...winners },
-                submitted: true,
-                updatedOnce: true,
-                rightSideMigrated: true
-            };
-            saveStore(store);
-            bracketSubmitted = true;
-            canEditSavedBracket = false;
-            applyBracketShellState();
-            renderLeaderboard();
-            postBracketToSheets();
+            if (!currentUser) return;
+            alert('Brackets are locked for all players.');
         }
 
         function coalesceWinners(w) {
@@ -788,17 +745,26 @@
         }
 
         function accuracyForPredictions(pred) {
+            const picks = coalesceWinners(pred);
+            const isUpdatedBracket = hasW6WinnerInSavedData(picks);
             let correct = 0;
-            let total = 0;
+            const total = SCORE_KEYS.length;
             for (const key of SCORE_KEYS) {
                 const actual = officialResults[key];
-                if (actual == null || String(actual).trim() === '') continue;
-                const pick = pred[key];
-                if (pick == null || String(pick).trim() === '') continue;
-                total++;
-                if (normName(pick) === normName(actual)) correct++;
+                const pick = picks[key];
+                const hasActual = actual != null && String(actual).trim() !== '';
+                const hasPick = pick != null && String(pick).trim() !== '';
+
+                if (hasActual) {
+                    if (hasPick && normName(pick) === normName(actual)) correct++;
+                    continue;
+                }
+
+                // No official result: count as correct by default, unless the bracket
+                // is un-updated and missing a winner prediction for this game.
+                if (!isUpdatedBracket && !hasPick) continue;
+                correct++;
             }
-            if (total === 0) return 100;
             return Math.round((correct / total) * 1000) / 10;
         }
 
@@ -967,7 +933,7 @@
             const hasRemoteSavedBracket = !!remoteRow;
 
             bracketSubmitted = hasRemoteSavedBracket;
-            canEditSavedBracket = hasRemoteSavedBracket && !localEntry.updatedOnce;
+            canEditSavedBracket = false;
             winners = hasRemoteSavedBracket
                 ? { ...initialWinners(), ...coalesceWinners(remoteRow.winners) }
                 : { ...initialWinners() };
