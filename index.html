@@ -200,6 +200,17 @@
             box-shadow: none;
         }
 
+        /* Saved bracket vs posted results: correct pick (green), wrong (red), no result yet (default / white). */
+        .prediction-result-correct {
+            background-color: #bbf7d0 !important;
+            border-color: #22c55e !important;
+        }
+
+        .prediction-result-wrong {
+            background-color: #fecaca !important;
+            border-color: #ef4444 !important;
+        }
+
         @media (max-width: 1100px) {
             .bracket-container {
                 grid-template-columns: minmax(160px, 188px) 6px 96px 118px 88px 6px minmax(160px, 188px);
@@ -434,6 +445,26 @@
         /** Locks the first username to this browser so reload cannot start a second identity (localStorage only). */
         const REGISTERED_USER_KEY = 'tt_bracket_registered_user_v1';
         const SCORE_KEYS = ['w1', 'w2', 'w3', 'w4', 'w5', 'w6', 'ws1', 'ws2', 'ws3', 'ws4', 'f1', 'f2', 'champion'];
+
+        /** DOM id of the card that shows the user's pick for each scored stage (ws* mirror denormalized keys). */
+        const SCORE_KEY_DISPLAY_IDS = {
+            w1: 'w1',
+            w2: 'w2',
+            w3: 'w3',
+            w4: 'w4',
+            w5: 'w5',
+            w6: 'w6',
+            ws1: 'sw12',
+            ws2: 'f1',
+            ws3: 'ws3',
+            ws4: 'f2',
+            f1: 'f1',
+            f2: 'f2',
+            champion: 'winner-name'
+        };
+
+        const PREDICTION_CORRECT_CLASS = 'prediction-result-correct';
+        const PREDICTION_WRONG_CLASS = 'prediction-result-wrong';
 
         /** Bracket edits lock at 8:00 a.m. local time on April 20, 2026. */
         const SUBMISSION_DEADLINE = new Date(2026, 3, 20, 8, 0, 0, 0);
@@ -879,6 +910,64 @@
             return null;
         }
 
+        /** Posted result for a score key, including common JSON aliases (e.g. f1 vs ws2). */
+        function getOfficialActualForScoreKey(key) {
+            const fromAlias = officialResultFor(key);
+            if (fromAlias) return fromAlias;
+            const raw = officialResults && typeof officialResults === 'object' ? officialResults : {};
+            if (key === 'ws2' || key === 'f1') {
+                for (const k of ['f1', 'ws2']) {
+                    const v = raw[k];
+                    if (v != null && String(v).trim() !== '') return String(v).trim();
+                }
+                return null;
+            }
+            if (key === 'ws4' || key === 'f2') {
+                for (const k of ['f2', 'ws4']) {
+                    const v = raw[k];
+                    if (v != null && String(v).trim() !== '') return String(v).trim();
+                }
+                return null;
+            }
+            const v = raw[key];
+            return v != null && String(v).trim() !== '' ? String(v).trim() : null;
+        }
+
+        function clearBracketPredictionHighlights() {
+            const ids = ['w1', 'w2', 'w3', 'w4', 'w5', 'w6', 'sw12', 'ws3', 'f1', 'f2', 'winner-name'];
+            for (const id of ids) {
+                const el = document.getElementById(id);
+                if (!el) continue;
+                el.classList.remove(PREDICTION_CORRECT_CLASS, PREDICTION_WRONG_CLASS);
+            }
+        }
+
+        /** After restoring picks from saved data, tint each outcome slot vs match-results.json. */
+        function updateBracketPredictionHighlights() {
+            clearBracketPredictionHighlights();
+            if (!currentUser) return;
+            const picks = coalesceWinners(winners);
+            for (const key of SCORE_KEYS) {
+                const elId = SCORE_KEY_DISPLAY_IDS[key];
+                if (!elId) continue;
+                const el = document.getElementById(elId);
+                if (!el) continue;
+                const pick = picks[key];
+                const hasPick = pick != null && String(pick).trim() !== '';
+                const actual = getOfficialActualForScoreKey(key);
+                const hasActual = actual != null && String(actual).trim() !== '';
+                if (!hasActual) continue;
+                if (!hasPick) continue;
+                if (normName(pick) === normName(actual)) {
+                    el.classList.add(PREDICTION_CORRECT_CLASS);
+                    el.classList.remove(PREDICTION_WRONG_CLASS);
+                } else {
+                    el.classList.add(PREDICTION_WRONG_CLASS);
+                    el.classList.remove(PREDICTION_CORRECT_CLASS);
+                }
+            }
+        }
+
         function isStageLockedByResults(stageKey) {
             return !!officialResultFor(stageKey);
         }
@@ -1031,6 +1120,7 @@
                 else if (winners.champion === winners.f2) advanceToFinal('f2', true);
             }
             lockCompletedMatchesUi();
+            updateBracketPredictionHighlights();
         }
 
         function requireUser() {
